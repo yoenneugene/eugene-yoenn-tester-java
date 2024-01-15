@@ -27,9 +27,9 @@ public class ParkingService {
         this.ticketDAO = ticketDAO;
     }
 
-    public void processIncomingVehicle() {
+    public void processIncomingVehicle(ParkingType parkingType) {
         try{
-            ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
+            ParkingSpot parkingSpot = getNextParkingNumberIfAvailable(parkingType);
             if(parkingSpot !=null && parkingSpot.getId() > 0){
                 String vehicleRegNumber = getVehichleRegNumber();
                 parkingSpot.setAvailable(false);
@@ -59,11 +59,11 @@ public class ParkingService {
         return inputReaderUtil.readVehicleRegistrationNumber();
     }
 
-    public ParkingSpot getNextParkingNumberIfAvailable(){
+    public ParkingSpot getNextParkingNumberIfAvailable(ParkingType parkingType){
         int parkingNumber=0;
         ParkingSpot parkingSpot = null;
         try{
-            ParkingType parkingType = getVehichleType();
+
             parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);
             if(parkingNumber > 0){
                 parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);
@@ -78,24 +78,8 @@ public class ParkingService {
         return parkingSpot;
     }
 
-    private ParkingType getVehichleType(){
-        System.out.println("Please select vehicle type from menu");
-        System.out.println("1 CAR");
-        System.out.println("2 BIKE");
-        int input = inputReaderUtil.readSelection();
-        switch(input){
-            case 1: {
-                return ParkingType.CAR;
-            }
-            case 2: {
-                return ParkingType.BIKE;
-            }
-            default: {
-                System.out.println("Incorrect input provided");
-                throw new IllegalArgumentException("Entered input is invalid");
-            }
-        }
-    }
+
+
 
     public void processExitingVehicle() {
         try{
@@ -103,7 +87,13 @@ public class ParkingService {
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);
-            fareCalculatorService.calculateFare(ticket);
+
+            if (ticketDAO.getNbTicket(vehicleRegNumber) > 1 ) {
+                fareCalculatorService.calculateFare(ticket, true);
+            }
+            else
+            {fareCalculatorService.calculateFare(ticket, false);
+                }
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
