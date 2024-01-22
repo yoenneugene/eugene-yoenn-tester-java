@@ -127,7 +127,7 @@ public class FareCalculatorServiceTest {
     @Test
     public void calculateFareCarWithLessThan30minutesParkingTime() {
         Date inTime = new Date();
-        inTime.setTime(System.currentTimeMillis() - (25 * 60 * 1000));//29 minutes parking time should give 3/4th parking fare
+        inTime.setTime(System.currentTimeMillis() - (25 * 60 * 1000));//25 minutes parking time should give 3/4th parking fare
         Date outTime = new Date();
         ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
 
